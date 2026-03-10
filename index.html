@@ -369,6 +369,19 @@
             font-weight: 800;
         }
 
+        .dom-probe {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            clip-path: inset(50%);
+            border: 0;
+            white-space: nowrap;
+        }
+
         @media (max-width: 980px) {
             .hero-top,
             .grid,
@@ -787,5 +800,10 @@
         document.addEventListener("DOMContentLoaded", renderPage);
     </script>
 </head>
-<body></body>
+<body>
+    <div class="dom-probe">
+        <a class="dutylist-link" href="#">DUTY ASSIGNMENT</a>
+        <div class="line-break">RETURN FLIGHT EXISTS</div>
+    </div>
+</body>
 </html>
