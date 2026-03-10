@@ -3,9 +3,789 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Flight Briefing</title>
+    <style>
+        :root {
+            --bg: #f3efe6;
+            --paper: rgba(255, 252, 246, 0.88);
+            --ink: #14213d;
+            --muted: #667085;
+            --line: rgba(20, 33, 61, 0.12);
+            --accent: #d97706;
+            --accent-strong: #b45309;
+            --sky: #9ec5fe;
+            --good: #1f7a4d;
+            --shadow: 0 24px 60px rgba(20, 33, 61, 0.14);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Avenir Next", "Segoe UI", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 32%),
+                linear-gradient(160deg, #efe8dc 0%, #e8edf6 54%, #dce6f3 100%);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .shell {
+            width: min(1200px, calc(100vw - 32px));
+            margin: 24px auto 48px;
+        }
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            padding: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 28px;
+            background:
+                linear-gradient(135deg, rgba(20, 33, 61, 0.94), rgba(40, 60, 103, 0.9)),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent);
+            color: #fdfcf8;
+            box-shadow: var(--shadow);
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            inset: auto -10% -30% auto;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(217, 119, 6, 0.35), transparent 68%);
+        }
+
+        .hero-top,
+        .hero-bottom,
+        .grid,
+        .info-row,
+        .pill-row,
+        .crew-list,
+        .duty-summary,
+        .link-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .hero-top {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            align-items: start;
+            position: relative;
+            z-index: 1;
+        }
+
+        .eyebrow {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(253, 252, 248, 0.72);
+        }
+
+        .route-code {
+            margin-top: 10px;
+            font-size: clamp(42px, 8vw, 88px);
+            line-height: 0.92;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+        }
+
+        .route-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .route-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .route-head-main {
+            min-width: 0;
+        }
+
+        .btn-icon-wrap {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            min-width: 10rem;
+            width: 10rem;
+            padding-top: 8px;
+            flex: 0 0 auto;
+        }
+
+        .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .btn-check {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-chip,
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .hero-chip {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+        }
+
+        .hero-aside {
+            justify-self: end;
+            width: min(360px, 100%);
+            padding: 20px;
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-aside h2,
+        .section h3 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .stat-line {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            font-size: 14px;
+        }
+
+        .stat-line:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .hero-bottom {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            margin-top: 22px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .timeline-card {
+            padding: 16px 18px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .timeline-card strong {
+            display: block;
+            margin-top: 6px;
+            font-size: 24px;
+            letter-spacing: -0.03em;
+        }
+
+        .timeline-card span {
+            font-size: 12px;
+            color: rgba(253, 252, 248, 0.72);
+        }
+
+        .grid {
+            grid-template-columns: 1.2fr 0.8fr;
+            margin-top: 22px;
+        }
+
+        .stack {
+            display: grid;
+            gap: 18px;
+        }
+
+        .section {
+            padding: 22px;
+            border-radius: 24px;
+            background: var(--paper);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+        }
+
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .section-note {
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .info-row {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .info-card {
+            padding: 16px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid var(--line);
+        }
+
+        .label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .value {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        .subvalue {
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .pill-row {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .chip {
+            justify-content: center;
+            background: rgba(20, 33, 61, 0.06);
+            border: 1px solid var(--line);
+            color: var(--ink);
+        }
+
+        .chip.good {
+            color: var(--good);
+            border-color: rgba(31, 122, 77, 0.2);
+            background: rgba(31, 122, 77, 0.08);
+        }
+
+        .crew-list,
+        .link-list {
+            grid-template-columns: 1fr;
+        }
+
+        .crew-item,
+        .link-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 16px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.78);
+            border: 1px solid var(--line);
+        }
+
+        .crew-item strong,
+        .link-item strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .duty-summary {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .summary-box,
+        .comment-box {
+            padding: 16px;
+            border-radius: 18px;
+            background: rgba(20, 33, 61, 0.04);
+            border: 1px solid var(--line);
+        }
+
+        .summary-box pre,
+        .comment-box p {
+            margin: 0;
+            white-space: pre-wrap;
+            font-family: inherit;
+            line-height: 1.5;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            background: rgba(217, 119, 6, 0.12);
+            color: var(--accent-strong);
+        }
+
+        .link-item span:last-child {
+            align-self: center;
+            color: var(--accent-strong);
+            font-weight: 800;
+        }
+
+        @media (max-width: 980px) {
+            .hero-top,
+            .grid,
+            .hero-bottom,
+            .info-row,
+            .pill-row,
+            .duty-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-aside {
+                justify-self: stretch;
+            }
+
+            .route-head {
+                flex-direction: column;
+            }
+
+            .btn-icon-wrap {
+                justify-content: flex-start;
+                padding-top: 0;
+            }
+        }
+    </style>
+    <script>
+        let testdata = {
+            "params": {
+                "flt_dt": "2026-03-13",
+                "flt_num": "8871",
+                "stnfr": "ICN",
+                "stnto": "SIA"
+            },
+            "is_dom": false,
+            "service_procedure": [
+                {
+                    "title": "Sample procedure"
+                }
+            ],
+            "service_meal": [
+                {
+                    "code": "YML",
+                    "name": "Bagasse Casserole"
+                }
+            ],
+            "service_wine": [
+                {
+                    "class": "C",
+                    "name": "House Wine"
+                }
+            ],
+            "achl_mgmt": {
+                "ifesys": "i5000",
+                "ifeksw_y": "N",
+                "inet_y": "Y",
+                "card_y": "Y"
+            },
+            "session": {
+                "userDetail": {
+                    "loginId": "0055447"
+                }
+            },
+            "code_share": [
+                {
+                    "carr_cd": "CI",
+                    "flt_no": "9044"
+                },
+                {
+                    "carr_cd": "DL",
+                    "flt_no": "7734"
+                }
+            ],
+            "extra_crew_aircc": [],
+            "duty_assignment_text": "정상 데이터",
+            "duty_assignment": {
+                "first": {
+                    "staff_name": "HONG GILDONG",
+                    "kornm_n": "홍길동",
+                    "staff_num": "1234567",
+                    "alias_cd": "DP",
+                    "prmt_yr": "18",
+                    "team_cd": "0001"
+                },
+                "list": [
+                    {
+                        "staff_num_masking_1": "1234***"
+                    },
+                    {
+                        "staff_num_masking_1": "5678***",
+                        "staff_num_masking_2": "7001***"
+                    }
+                ]
+            },
+            "pursers_comment": {
+                "remarks_txt": "caution hot items",
+                "delay_remarks_txt": "be sure to take... your passport",
+                "annc_cabin_staff_name": "CAG",
+                "taser_mjr_staff_name": "DP",
+                "taser_jnr_staff_name": "YCG",
+                "sale_mjr_staff_name": "YBG",
+                "sale_jnr_staff_name": "",
+                "meal_seal_staff_name_f": "",
+                "meal_seal_staff_name_c": "CAG",
+                "meal_seal_staff_name_y": "YCR,YBL",
+                "headcount_staff_name": "YBG,YCG",
+                "l2_stby_staff_name": "CAG",
+                "y_cls_meal_survey": "YBR"
+            },
+            "data": {
+                "brf_link_item": "https://docs.google.com/document/d/1Uphk6BAjOgzZF8Xb5huJPPj3uJanVqDq3AlQ3WTDR3M/edit?tab=t.0",
+                "brf_link_stn": "https://docs.google.com/document/d/1Uphk6BAjOgzZF8Xb5huJPPj3uJanVqDq3AlQ3WTDR3M/edit?tab=t.0",
+                "brf_link_ac": "https://docs.google.com/presentation/d/12mo_kS0vqaWeBa5XUcts-1mDxHaZJs9nLGkzw-nvqw0/edit?slide=id.g3ce88a31c36_0_126#slide=id.g3ce88a31c36_0_126",
+                "brf_link_ciq": "https://docs.google.com/document/d/16xzHoqF2Sq0SELDvD5ElciB7yT2fRq0U1xrarYTT9mg/edit?tab=t.0",
+                "aircc_duty_cd": "FLY",
+                "assign_duty_cd": "CAG",
+                "duty_task": [
+                    "L2"
+                ],
+                "duty_assignment_crew": [
+                    {
+                        "staff_num": "0000000",
+                        "duty_cd": "DP",
+                        "jump_cd": "",
+                        "alias_cd": "DP",
+                        "prmt_yr": "18",
+                        "kornm_n": "홍길동",
+                        "team_cd": "0001"
+                    },
+                    {
+                        "staff_num": "1111111",
+                        "duty_cd": "CAG",
+                        "jump_cd": "L2",
+                        "alias_cd": "CAG",
+                        "prmt_yr": "16",
+                        "kornm_n": "김대한",
+                        "team_cd": "0002"
+                    },
+                    {
+                        "staff_num": "2222222",
+                        "duty_cd": "YBL",
+                        "jump_cd": "L4",
+                        "alias_cd": "YBL",
+                        "prmt_yr": "20",
+                        "kornm_n": "이하늘",
+                        "team_cd": "0003"
+                    }
+                ],
+                "pursers_comment": {
+                    "brfg_time": "08:10",
+                    "brfg_room": "Crew BRF Room"
+                },
+                "daily_sch": {
+                    "sch_dep_dt_loc_comma": "2026.03.13",
+                    "week_day": "FRI",
+                    "est_dep_dt_loc_hhmi": "09:00",
+                    "dep_gmt_offset_hh24mi": "9:00",
+                    "est_arv_dt_loc_hhmi": "11:00",
+                    "arv_gmt_offset_hh24mi": "8:00",
+                    "flt_time": "03:00",
+                    "actual_time": "03:10",
+                    "regno": "HL0008",
+                    "acver": "77WS",
+                    "f_book": "0",
+                    "c_book": "43",
+                    "v_book": "0",
+                    "y_book": "208",
+                    "f_cfg": "0",
+                    "c_cfg": "64",
+                    "v_cfg": "0",
+                    "y_cfg": "227",
+                    "sch_dep_dt_comma": "2026.03.13",
+                    "week_day_utc": "FRI",
+                    "stnfr": "ICN",
+                    "gate": "252"
+                },
+                "rtn_daily_sch": {
+                    "flt_num": "2022",
+                    "sch_dep_dt_loc": "20260314",
+                    "f_book": "0",
+                    "c_book": "30",
+                    "v_book": "0",
+                    "y_book": "180",
+                    "f_cfg": "0",
+                    "c_cfg": "64",
+                    "v_cfg": "0",
+                    "y_cfg": "227"
+                }
+            }
+        };
+
+        window.app = {
+            _data: testdata
+        };
+    </script>
+    <script>
+        function formatCodeshares(items) {
+            return items.map((item) => `${item.carr_cd}${item.flt_no}`).join(" · ");
+        }
+
+        function formatCrewList(crew) {
+            return crew.slice(1).map((item) => {
+                const duty = [item.duty_cd, item.jump_cd].filter(Boolean).join(" ");
+                return {
+                    duty,
+                    name: item.kornm_n,
+                    meta: `${item.alias_cd}${item.prmt_yr} / TEAM ${item.team_cd}`
+                };
+            });
+        }
+
+        function buildDutySummary(data) {
+            return [
+                `ANN: ${data.annc_cabin_staff_name || "-"}`,
+                `Sales: ${[data.sale_mjr_staff_name, data.sale_jnr_staff_name].filter(Boolean).join(", ") || "-"}`,
+                `TASER: ${[data.taser_mjr_staff_name, data.taser_jnr_staff_name].filter(Boolean).join(", ") || "-"}`,
+                `SealCHK: ${[data.meal_seal_staff_name_f, data.meal_seal_staff_name_c, data.meal_seal_staff_name_y].filter(Boolean).join(", ") || "-"}`,
+                `YmealSurvey: ${data.y_cls_meal_survey || "-"}`,
+                `B/PassCHK: ${data.headcount_staff_name || "-"}`,
+                `L2standBy: ${data.l2_stby_staff_name || "-"}`
+            ].join("\n");
+        }
+
+        function renderPage() {
+            const source = window.app._data;
+            const daily = source.data.daily_sch;
+            const purser = source.pursers_comment;
+            const crewList = formatCrewList(source.data.duty_assignment_crew);
+            const links = [
+                { label: "Service Item Brief", url: source.data.brf_link_item },
+                { label: "Station Brief", url: source.data.brf_link_stn },
+                { label: "Aircraft Brief", url: source.data.brf_link_ac },
+                { label: "CIQ Brief", url: source.data.brf_link_ciq }
+            ].filter((item) => item.url);
+
+            document.body.innerHTML = `
+                <main class="shell">
+                    <section class="hero">
+                        <div class="hero-top">
+                            <div>
+                                <div class="eyebrow">Flight Briefing Deck</div>
+                                <div class="route-head">
+                                    <div class="route-head-main">
+                                        <div class="route-code">KE${source.params.flt_num}</div>
+                                    </div>
+                                    <div class="btn-icon-wrap" aria-label="Extension button slot"></div>
+                                </div>
+                                <div class="route-meta">
+                                    <span class="hero-chip">${source.params.stnfr} to ${source.params.stnto}</span>
+                                    <span class="hero-chip">${daily.sch_dep_dt_loc_comma} (${daily.week_day})</span>
+                                    <span class="hero-chip">${source.is_dom ? "Domestic" : "International"}</span>
+                                </div>
+                            </div>
+                            <aside class="hero-aside">
+                                <h2>Flight Snapshot</h2>
+                                <div class="stat-line"><span>Aircraft</span><strong>${daily.regno} / ${daily.acver}</strong></div>
+                                <div class="stat-line"><span>IFE</span><strong>${source.achl_mgmt.ifesys}</strong></div>
+                                <div class="stat-line"><span>Internet</span><strong>${source.achl_mgmt.inet_y === "Y" ? "Available" : "Unavailable"}</strong></div>
+                                <div class="stat-line"><span>Briefing</span><strong>${source.data.pursers_comment.brfg_time} / ${source.data.pursers_comment.brfg_room}</strong></div>
+                                <div class="stat-line"><span>Login ID</span><strong>${source.session.userDetail.loginId}</strong></div>
+                            </aside>
+                        </div>
+                        <div class="hero-bottom">
+                            <div class="timeline-card">
+                                <span>Departure</span>
+                                <strong>${source.params.stnfr} ${daily.est_dep_dt_loc_hhmi}</strong>
+                                <span>GMT ${daily.dep_gmt_offset_hh24mi}</span>
+                            </div>
+                            <div class="timeline-card">
+                                <span>Arrival</span>
+                                <strong>${source.params.stnto} ${daily.est_arv_dt_loc_hhmi}</strong>
+                                <span>GMT ${daily.arv_gmt_offset_hh24mi}</span>
+                            </div>
+                            <div class="timeline-card">
+                                <span>Scheduled / Actual</span>
+                                <strong>${daily.flt_time} / ${daily.actual_time}</strong>
+                                <span>Gate ${daily.gate || "TBD"}</span>
+                            </div>
+                            <div class="timeline-card">
+                                <span>Codeshare</span>
+                                <strong>${formatCodeshares(source.code_share)}</strong>
+                                <span>DP ${source.duty_assignment.first.kornm_n}</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="grid">
+                        <div class="stack">
+                            <section class="section">
+                                <div class="section-head">
+                                    <h3>Operation</h3>
+                                    <span class="section-note">Live from testdata</span>
+                                </div>
+                                <div class="info-row">
+                                    <article class="info-card">
+                                        <span class="label">Reservation</span>
+                                        <div class="value">F${daily.f_book} / C${daily.c_book} / Y${daily.y_book}</div>
+                                        <div class="subvalue">Config ${daily.f_cfg} / ${daily.c_cfg} / ${daily.y_cfg}</div>
+                                    </article>
+                                    <article class="info-card">
+                                        <span class="label">Return Flight</span>
+                                        <div class="value">KE${source.data.rtn_daily_sch.flt_num}</div>
+                                        <div class="subvalue">${source.data.rtn_daily_sch.sch_dep_dt_loc}</div>
+                                    </article>
+                                    <article class="info-card">
+                                        <span class="label">My Duty</span>
+                                        <div class="value">${source.data.assign_duty_cd}</div>
+                                        <div class="subvalue">${source.data.duty_task.join(", ")}</div>
+                                    </article>
+                                </div>
+                            </section>
+
+                            <section class="section">
+                                <div class="section-head">
+                                    <h3>System Status</h3>
+                                    <span class="tag">Cabin Tech</span>
+                                </div>
+                                <div class="pill-row">
+                                    <div class="chip">IFE ${source.achl_mgmt.ifesys}</div>
+                                    <div class="chip ${source.achl_mgmt.ifeksw_y === "Y" ? "" : "good"}">Kill SW ${source.achl_mgmt.ifeksw_y}</div>
+                                    <div class="chip ${source.achl_mgmt.inet_y === "Y" ? "good" : ""}">Internet ${source.achl_mgmt.inet_y}</div>
+                                    <div class="chip ${source.achl_mgmt.card_y === "Y" ? "good" : ""}">CMT ${source.achl_mgmt.card_y}</div>
+                                </div>
+                            </section>
+
+                            <section class="section">
+                                <div class="section-head">
+                                    <h3>Crew Assignment</h3>
+                                    <span class="section-note">${source.data.aircc_duty_cd}</span>
+                                </div>
+                                <div class="crew-list">
+                                    <article class="crew-item">
+                                        <div>
+                                            <strong>DP ${source.duty_assignment.first.staff_name}</strong>
+                                            <div class="muted">${source.duty_assignment.first.kornm_n} / ${source.duty_assignment.first.staff_num}</div>
+                                        </div>
+                                        <div class="muted">${source.duty_assignment.first.alias_cd}${source.duty_assignment.first.prmt_yr} / ${source.duty_assignment.first.team_cd}</div>
+                                    </article>
+                                    ${crewList.map((item) => `
+                                        <article class="crew-item">
+                                            <div>
+                                                <strong>${item.duty}</strong>
+                                                <div class="muted">${item.name}</div>
+                                            </div>
+                                            <div class="muted">${item.meta}</div>
+                                        </article>
+                                    `).join("")}
+                                </div>
+                            </section>
+                        </div>
+
+                        <div class="stack">
+                            <section class="section">
+                                <div class="section-head">
+                                    <h3>Purser Comment</h3>
+                                    <span class="tag">Priority</span>
+                                </div>
+                                <div class="comment-box">
+                                    <p>${purser.remarks_txt}</p>
+                                </div>
+                                <div class="comment-box" style="margin-top: 12px;">
+                                    <p>${purser.delay_remarks_txt}</p>
+                                </div>
+                            </section>
+
+                            <section class="section">
+                                <div class="section-head">
+                                    <h3>Duty Summary</h3>
+                                    <span class="section-note">Role allocation</span>
+                                </div>
+                                <div class="duty-summary">
+                                    <div class="summary-box">
+                                        <pre>${buildDutySummary(purser)}</pre>
+                                    </div>
+                                    <div class="summary-box">
+                                        <pre>${JSON.stringify(source.service_procedure, null, 2)}</pre>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="section">
+                                <div class="section-head">
+                                    <h3>Service & Links</h3>
+                                    <span class="section-note">Briefing assets</span>
+                                </div>
+                                <div class="crew-list">
+                                    <article class="crew-item">
+                                        <div>
+                                            <strong>Meal</strong>
+                                            <div class="muted">${source.service_meal.map((item) => `${item.code} ${item.name}`).join(", ")}</div>
+                                        </div>
+                                    </article>
+                                    <article class="crew-item">
+                                        <div>
+                                            <strong>Wine</strong>
+                                            <div class="muted">${source.service_wine.map((item) => `${item.class} ${item.name}`).join(", ")}</div>
+                                        </div>
+                                    </article>
+                                </div>
+                                <div class="link-list" style="margin-top: 14px;">
+                                    ${links.map((item) => `
+                                        <a class="link-item" href="${item.url}" target="_blank" rel="noreferrer">
+                                            <div>
+                                                <strong>${item.label}</strong>
+                                                <div class="muted">${item.url}</div>
+                                            </div>
+                                            <span>Open</span>
+                                        </a>
+                                    `).join("")}
+                                </div>
+                            </section>
+                        </div>
+                    </section>
+                </main>
+            `;
+        }
+
+        document.addEventListener("DOMContentLoaded", renderPage);
+    </script>
 </head>
-<body>
-    <h1>hello world</h1>
-</body>
+<body></body>
 </html>
