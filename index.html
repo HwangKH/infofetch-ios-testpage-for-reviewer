@@ -404,6 +404,21 @@
             font-weight: 800;
         }
 
+        .dutylist-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 14px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(20, 33, 61, 0.06);
+            border: 1px solid var(--line);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--ink);
+        }
+
         @keyframes pulseHint {
             0%,
             100% {
@@ -761,6 +776,7 @@
                                     <h3>Crew Assignment</h3>
                                     <span class="section-note">${source.data.aircc_duty_cd}</span>
                                 </div>
+                                <div class="dutylist-link">DUTY ASSIGNMENT</div>
                                 <div class="crew-list">
                                     <article class="crew-item">
                                         <div>
@@ -851,10 +867,5 @@
         document.addEventListener("DOMContentLoaded", renderPage);
     </script>
 </head>
-<body>
-    <div class="dom-probe">
-        <a class="dutylist-link" href="#">DUTY ASSIGNMENT</a>
-        <div class="line-break">RETURN FLIGHT EXISTS</div>
-    </div>
-</body>
+<body></body>
 </html>
