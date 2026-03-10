@@ -1,1 +1,908 @@
-<h1>bulletin examples</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Bulletin Board</title>
+    <style>
+        :root {
+            --bg: #f3efe6;
+            --paper: rgba(255, 252, 246, 0.9);
+            --ink: #14213d;
+            --muted: #667085;
+            --line: rgba(20, 33, 61, 0.12);
+            --accent: #d97706;
+            --accent-strong: #b45309;
+            --good: #1f7a4d;
+            --shadow: 0 24px 60px rgba(20, 33, 61, 0.14);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Avenir Next", "Segoe UI", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 32%),
+                linear-gradient(160deg, #efe8dc 0%, #e8edf6 54%, #dce6f3 100%);
+        }
+
+        button {
+            font: inherit;
+        }
+
+        .shell {
+            width: min(1260px, calc(100vw - 32px));
+            margin: 24px auto 48px;
+        }
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            padding: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 28px;
+            background:
+                linear-gradient(135deg, rgba(20, 33, 61, 0.94), rgba(40, 60, 103, 0.9)),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent);
+            color: #fdfcf8;
+            box-shadow: var(--shadow);
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            inset: auto -10% -30% auto;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(217, 119, 6, 0.35), transparent 68%);
+        }
+
+        .hero-row,
+        .hero-metrics,
+        .board,
+        .filters,
+        .list,
+        .detail-grid,
+        .detail-list,
+        .tag-row {
+            display: grid;
+            gap: 16px;
+        }
+
+        .hero-row {
+            grid-template-columns: 1.2fr 0.8fr;
+            position: relative;
+            z-index: 1;
+        }
+
+        .eyebrow {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(253, 252, 248, 0.72);
+        }
+
+        .headline {
+            margin-top: 10px;
+            font-size: clamp(38px, 7vw, 72px);
+            line-height: 0.94;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+        }
+
+        .hero-copy {
+            margin-top: 14px;
+            max-width: 680px;
+            color: rgba(253, 252, 248, 0.78);
+            line-height: 1.6;
+        }
+
+        .hero-metrics {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            margin-top: 22px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .metric {
+            padding: 16px 18px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .metric span {
+            font-size: 12px;
+            color: rgba(253, 252, 248, 0.7);
+        }
+
+        .metric strong {
+            display: block;
+            margin-top: 8px;
+            font-size: 28px;
+            letter-spacing: -0.03em;
+        }
+
+        .hero-side {
+            padding: 20px;
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-side h2,
+        .section h3 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .hero-side p {
+            margin: 14px 0 0;
+            color: rgba(253, 252, 248, 0.82);
+            line-height: 1.7;
+        }
+
+        .board {
+            grid-template-columns: 420px 1fr;
+            margin-top: 22px;
+        }
+
+        .section {
+            padding: 22px;
+            border-radius: 24px;
+            background: var(--paper);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+        }
+
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .section-note {
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .filters {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            margin-bottom: 16px;
+        }
+
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(20, 33, 61, 0.06);
+            color: var(--ink);
+            cursor: pointer;
+            transition: 0.18s ease;
+        }
+
+        .filter-chip.active {
+            background: rgba(217, 119, 6, 0.14);
+            border-color: rgba(217, 119, 6, 0.28);
+            color: var(--accent-strong);
+            font-weight: 800;
+        }
+
+        .list {
+            grid-template-columns: 1fr;
+            max-height: 840px;
+            overflow: auto;
+            padding-right: 6px;
+        }
+
+        .notice-card {
+            width: 100%;
+            text-align: left;
+            padding: 16px;
+            border-radius: 20px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.78);
+            cursor: pointer;
+            transition: 0.18s ease;
+        }
+
+        .notice-card:hover,
+        .notice-card.active {
+            transform: translateY(-1px);
+            border-color: rgba(217, 119, 6, 0.28);
+            box-shadow: 0 16px 32px rgba(20, 33, 61, 0.08);
+        }
+
+        .notice-card.active {
+            background: linear-gradient(180deg, rgba(255, 247, 237, 0.96), rgba(255, 255, 255, 0.96));
+        }
+
+        .tag-row {
+            grid-template-columns: repeat(3, minmax(0, max-content));
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            background: rgba(20, 33, 61, 0.06);
+            color: var(--muted);
+        }
+
+        .tag.priority-high {
+            background: rgba(185, 28, 28, 0.12);
+            color: #b91c1c;
+        }
+
+        .tag.priority-medium {
+            background: rgba(217, 119, 6, 0.12);
+            color: var(--accent-strong);
+        }
+
+        .tag.priority-low {
+            background: rgba(31, 122, 77, 0.1);
+            color: var(--good);
+        }
+
+        .notice-title {
+            font-size: 19px;
+            font-weight: 800;
+            line-height: 1.35;
+            letter-spacing: -0.02em;
+        }
+
+        .notice-meta {
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .detail-shell {
+            display: grid;
+            gap: 18px;
+        }
+
+        .detail-header {
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .detail-title {
+            margin-top: 12px;
+            font-size: clamp(28px, 4vw, 42px);
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+            font-weight: 800;
+        }
+
+        .detail-lead {
+            margin-top: 14px;
+            color: var(--muted);
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        .detail-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .detail-box {
+            padding: 16px;
+            border-radius: 18px;
+            background: rgba(20, 33, 61, 0.04);
+            border: 1px solid var(--line);
+        }
+
+        .detail-box span {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .detail-box strong {
+            font-size: 18px;
+            line-height: 1.4;
+        }
+
+        .detail-list {
+            grid-template-columns: 1fr;
+        }
+
+        .detail-item {
+            padding: 16px 18px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.78);
+            border: 1px solid var(--line);
+        }
+
+        .detail-item strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .detail-item p,
+        .detail-item li {
+            margin: 0;
+            color: var(--ink);
+            line-height: 1.7;
+        }
+
+        .detail-item ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        .empty {
+            display: grid;
+            place-items: center;
+            min-height: 280px;
+            color: var(--muted);
+        }
+
+        @media (max-width: 1024px) {
+            .hero-row,
+            .board,
+            .hero-metrics,
+            .detail-grid,
+            .filters {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <script>
+        const notices = [
+            {
+                id: 1,
+                category: "Safety",
+                route: "All Routes",
+                priority: "high",
+                title: "Immediate action when thermal runaway is suspected in cabin baggage",
+                date: "2026.03.10",
+                lead: "If smoke, popping sound, rapid heat, or unusual odor is detected from a personal electronic device, isolate the device immediately and begin the thermal runaway response without delay.",
+                impact: "Cabin safety, rapid crew coordination, diversion risk",
+                cabin: "All cabins",
+                effectivity: "Effective now",
+                details: [
+                    {
+                        heading: "Recognition cues",
+                        body: "Look for white smoke, hissing noise, sudden passenger panic, charging cable damage, or a bag surface becoming too hot to touch."
+                    },
+                    {
+                        heading: "Crew action flow",
+                        list: [
+                            "Call for assistance and assign one crew member to crowd control.",
+                            "Move nearby passengers away if practical and stop charging power to the area.",
+                            "Apply the approved device fire containment process and continue temperature monitoring.",
+                            "Report to flight deck with seat number, smoke level, and current containment status."
+                        ]
+                    },
+                    {
+                        heading: "Reviewer note",
+                        body: "This bulletin is mock content for reviewer validation. It is intentionally written in briefing style."
+                    }
+                ]
+            },
+            {
+                id: 2,
+                category: "Service",
+                route: "USA Routes",
+                priority: "medium",
+                title: "Service rhythm on USA westbound overnight flights",
+                date: "2026.03.09",
+                lead: "Westbound USA flights continue to show higher preference for condensed first meal service followed by longer cabin rest time, especially in premium economy and economy front zones.",
+                impact: "Service pacing, galley planning",
+                cabin: "C / Y",
+                effectivity: "March 2026 schedule",
+                details: [
+                    {
+                        heading: "Observed pattern",
+                        body: "Passengers increasingly request lights-down timing within 40 minutes after tray pick-up. Fast tray collection reduces repeated call bells."
+                    },
+                    {
+                        heading: "Recommended service focus",
+                        list: [
+                            "Confirm beverage top-up before lights-down announcement.",
+                            "Proactively identify passengers requesting wake-up meal handling.",
+                            "Keep hydration round visible in mid-cabin to reduce ad hoc requests."
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 3,
+                category: "Special Pax",
+                route: "All Routes",
+                priority: "medium",
+                title: "Key handling points for passengers traveling with companion birds",
+                date: "2026.03.08",
+                lead: "Mock bulletin for unusual live animal carriage. Companion birds may react strongly to cabin movement, galley noise, or bright light during boarding and taxi.",
+                impact: "Special passenger handling",
+                cabin: "Y cabin focus",
+                effectivity: "Reference only",
+                details: [
+                    {
+                        heading: "General considerations",
+                        body: "Ask the passenger to keep the carrier closed, confirm seat area stability, and avoid unnecessary stimulation from nearby passengers."
+                    },
+                    {
+                        heading: "Cabin note",
+                        list: [
+                            "Do not place carrier near hot beverage staging area.",
+                            "Avoid moving the carrier unless required for safety.",
+                            "Escalate if unusual odor, feather loss, or distress vocalization continues."
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 4,
+                category: "CIQ",
+                route: "USA Routes",
+                priority: "low",
+                title: "Reminder on verbal guidance for U.S. entry documentation questions",
+                date: "2026.03.07",
+                lead: "Passengers continue to ask for simplified arrival instructions. Use consistent non-legal wording and direct them to official arrival channels when answers depend on status or visa type.",
+                impact: "Arrival communication quality",
+                cabin: "All cabins",
+                effectivity: "Current season",
+                details: [
+                    {
+                        heading: "Good practice",
+                        body: "Use short, non-committal explanations such as 'Please follow the latest official instructions on arrival' rather than interpreting eligibility rules."
+                    },
+                    {
+                        heading: "Avoid",
+                        list: [
+                            "Explaining visa eligibility from memory.",
+                            "Assuring passengers that a document will definitely be accepted.",
+                            "Guessing customs declaration exemptions."
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 5,
+                category: "Safety",
+                route: "Asia Short-haul",
+                priority: "high",
+                title: "Door area congestion during fast turnarounds",
+                date: "2026.03.06",
+                lead: "Several mock events indicate that crew bags, catering carts, and waiting passengers overlap at door areas during tight turnarounds, increasing trip and impact risk.",
+                impact: "Boarding safety, crew movement",
+                cabin: "L1/L2/L4 zones",
+                effectivity: "Immediate",
+                details: [
+                    {
+                        heading: "High-risk moment",
+                        body: "Risk is highest between final cleaners exiting and first special-handling passengers entering."
+                    },
+                    {
+                        heading: "Preventive setup",
+                        list: [
+                            "Keep one side of the door area visually clear.",
+                            "Stage crew baggage away from entry path.",
+                            "Assign one crew member to scan floor hazards before open boarding flow."
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 6,
+                category: "Service",
+                route: "USA Routes",
+                priority: "medium",
+                title: "Meal preference trend: high request for plain options on long-haul morning arrivals",
+                date: "2026.03.05",
+                lead: "Mock trend sample suggests plain breakfast choices, fruit-first service, and low-sauce options are increasingly preferred before early morning arrivals.",
+                impact: "Meal guidance",
+                cabin: "Prestige / Economy",
+                effectivity: "March sample",
+                details: [
+                    {
+                        heading: "Frequent comments",
+                        body: "Passengers mention jet lag, low appetite, and preference for lighter presentation before landing."
+                    },
+                    {
+                        heading: "Service tip",
+                        list: [
+                            "Present the lighter choice first when appropriate.",
+                            "Mention simple options clearly without overselling.",
+                            "Support hydration before coffee second round."
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 7,
+                category: "Announcement",
+                route: "All Routes",
+                priority: "low",
+                title: "Suggested wording tone for turbulence follow-up announcements",
+                date: "2026.03.05",
+                lead: "When turbulence continues longer than expected, passengers respond better to calm, operational wording rather than vague reassurance.",
+                impact: "Passenger confidence",
+                cabin: "PA handling",
+                effectivity: "Reference script",
+                details: [
+                    {
+                        heading: "Tone guidance",
+                        body: "Use direct timing-neutral phrasing: 'Cabin crew remain seated until the captain advises otherwise.'"
+                    },
+                    {
+                        heading: "Why it matters",
+                        body: "Passengers interpret overly soft wording as uncertainty. Operational clarity reduces repeated call bells."
+                    }
+                ]
+            },
+            {
+                id: 8,
+                category: "Special Pax",
+                route: "Europe Routes",
+                priority: "medium",
+                title: "Handling passengers with visible anxiety during de-icing delays",
+                date: "2026.03.04",
+                lead: "Mock case notes show repeated anxiety spikes when delay duration changes multiple times. Seat-area check-ins are more effective than broad repeated announcements.",
+                impact: "Customer care",
+                cabin: "All cabins",
+                effectivity: "Winter ops reference",
+                details: [
+                    {
+                        heading: "Crew focus",
+                        body: "Identify visibly anxious passengers early and use one assigned crew member for consistent communication."
+                    },
+                    {
+                        heading: "Avoid",
+                        list: [
+                            "Giving estimated pushback times unless confirmed.",
+                            "Using casual comments that sound speculative.",
+                            "Leaving medically anxious passengers without periodic updates."
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 9,
+                category: "Safety",
+                route: "All Routes",
+                priority: "high",
+                title: "Portable battery fire found inside seat mechanism",
+                date: "2026.03.04",
+                lead: "If a device falls into the seat structure and begins heating or smoking, do not attempt blind hand retrieval. Use coordinated containment and flight deck reporting.",
+                impact: "Severe cabin event potential",
+                cabin: "Seat track / seat structure",
+                effectivity: "Immediate",
+                details: [
+                    {
+                        heading: "Critical warning",
+                        body: "Crushed lithium batteries may escalate after movement. Retrieval attempts without visibility can worsen the event."
+                    },
+                    {
+                        heading: "Initial action",
+                        list: [
+                            "Block passenger access to the seat area.",
+                            "Use available cooling and containment procedures as trained.",
+                            "Coordinate with flight deck before seat power or cabin movement decisions."
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 10,
+                category: "Service",
+                route: "Japan Routes",
+                priority: "low",
+                title: "Short-haul premium cabin service signature refresh",
+                date: "2026.03.03",
+                lead: "Mock refresh bulletin: concise tray presentation, faster first-touch greeting, and cleaner galley reset remain the strongest quality drivers on short sectors.",
+                impact: "Premium service consistency",
+                cabin: "Prestige",
+                effectivity: "This month",
+                details: [
+                    {
+                        heading: "Focus points",
+                        list: [
+                            "Greet before baggage stow is fully settled where safe.",
+                            "Keep tray explanation to one clean sentence.",
+                            "Reset visual clutter in galley before first collection pass."
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 11,
+                category: "Security",
+                route: "All Routes",
+                priority: "medium",
+                title: "Suspicious abandoned power bank found in lavatory",
+                date: "2026.03.02",
+                lead: "Mock bulletin: an unattended power bank in lavatory should be treated as both safety and security concern until ownership and condition are verified.",
+                impact: "Security reporting, onboard safety",
+                cabin: "Lavatory area",
+                effectivity: "Immediate",
+                details: [
+                    {
+                        heading: "Crew response",
+                        list: [
+                            "Secure the area and prevent passenger handling.",
+                            "Assess for heat, smell, damage, or active charging signs.",
+                            "Escalate through onboard reporting chain and document location."
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 12,
+                category: "Announcement",
+                route: "USA Routes",
+                priority: "medium",
+                title: "Window shade briefing emphasis on daytime U.S. arrivals",
+                date: "2026.03.01",
+                lead: "Review sample indicates stronger compliance when window shade wording is linked to operational visibility rather than generic policy wording.",
+                impact: "Arrival prep compliance",
+                cabin: "All cabins",
+                effectivity: "Spring operations",
+                details: [
+                    {
+                        heading: "Recommended angle",
+                        body: "Frame the request around safety visibility and arrival readiness. Clear operational reason improves first-time compliance."
+                    }
+                ]
+            },
+            {
+                id: 13,
+                category: "Special Pax",
+                route: "Oceania Routes",
+                priority: "low",
+                title: "Mock note: passengers traveling with large musical instruments",
+                date: "2026.02.28",
+                lead: "Large instrument cases create boarding friction similar to sports gear. Early seat-area alignment reduces late aisle blocking.",
+                impact: "Boarding flow",
+                cabin: "All cabins",
+                effectivity: "Reference only",
+                details: [
+                    {
+                        heading: "Boarding tip",
+                        body: "Confirm seat area and stowage expectation early, before the aisle behind the passenger becomes congested."
+                    }
+                ]
+            },
+            {
+                id: 14,
+                category: "Safety",
+                route: "Middle East Routes",
+                priority: "medium",
+                title: "Galley floor slip risk after ice melt during extended ground wait",
+                date: "2026.02.27",
+                lead: "Mock event summaries show unnoticed meltwater near galley inserts during long waits with repeated beverage preparation.",
+                impact: "Crew injury prevention",
+                cabin: "Galley",
+                effectivity: "Current",
+                details: [
+                    {
+                        heading: "Control",
+                        list: [
+                            "Check floor condition before service restart.",
+                            "Wipe and recheck after every heavy ice handling cycle.",
+                            "Verbally warn relief crew entering the galley."
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        let activeCategory = "All";
+        let activeId = notices[0].id;
+
+        function categoryList() {
+            return ["All", ...new Set(notices.map((notice) => notice.category))];
+        }
+
+        function filteredNotices() {
+            return activeCategory === "All"
+                ? notices
+                : notices.filter((notice) => notice.category === activeCategory);
+        }
+
+        function activeNotice() {
+            const current = filteredNotices().find((notice) => notice.id === activeId);
+            return current || filteredNotices()[0] || null;
+        }
+
+        function priorityLabel(priority) {
+            return priority.toUpperCase();
+        }
+
+        function renderFilters() {
+            const filters = document.getElementById("filters");
+            filters.innerHTML = categoryList().map((category) => `
+                <button class="filter-chip ${category === activeCategory ? "active" : ""}" data-category="${category}">
+                    ${category}
+                </button>
+            `).join("");
+        }
+
+        function renderList() {
+            const list = document.getElementById("list");
+            const items = filteredNotices();
+            list.innerHTML = items.map((notice) => `
+                <button class="notice-card ${notice.id === activeId ? "active" : ""}" data-id="${notice.id}">
+                    <div class="tag-row">
+                        <span class="tag">${notice.category}</span>
+                        <span class="tag">${notice.route}</span>
+                        <span class="tag priority-${notice.priority}">${priorityLabel(notice.priority)}</span>
+                    </div>
+                    <div class="notice-title">${notice.title}</div>
+                    <div class="notice-meta">${notice.date} · ${notice.impact}</div>
+                </button>
+            `).join("");
+        }
+
+        function renderDetail() {
+            const target = document.getElementById("detail");
+            const notice = activeNotice();
+
+            if (!notice) {
+                target.innerHTML = `<div class="empty">No bulletin found for this category.</div>`;
+                return;
+            }
+
+            target.innerHTML = `
+                <div class="detail-shell">
+                    <div class="detail-header">
+                        <div class="tag-row">
+                            <span class="tag">${notice.category}</span>
+                            <span class="tag">${notice.route}</span>
+                            <span class="tag priority-${notice.priority}">${priorityLabel(notice.priority)}</span>
+                        </div>
+                        <div class="detail-title">${notice.title}</div>
+                        <div class="detail-lead">${notice.lead}</div>
+                    </div>
+                    <div class="detail-grid">
+                        <div class="detail-box">
+                            <span>Published</span>
+                            <strong>${notice.date}</strong>
+                        </div>
+                        <div class="detail-box">
+                            <span>Cabin / Area</span>
+                            <strong>${notice.cabin}</strong>
+                        </div>
+                        <div class="detail-box">
+                            <span>Effectivity</span>
+                            <strong>${notice.effectivity}</strong>
+                        </div>
+                    </div>
+                    <div class="detail-list">
+                        ${notice.details.map((item) => `
+                            <div class="detail-item">
+                                <strong>${item.heading}</strong>
+                                ${item.body ? `<p>${item.body}</p>` : ""}
+                                ${item.list ? `<ul>${item.list.map((line) => `<li>${line}</li>`).join("")}</ul>` : ""}
+                            </div>
+                        `).join("")}
+                    </div>
+                </div>
+            `;
+        }
+
+        function syncActiveAfterFilter() {
+            const items = filteredNotices();
+            if (!items.some((notice) => notice.id === activeId)) {
+                activeId = items[0] ? items[0].id : null;
+            }
+        }
+
+        function renderBoard() {
+            syncActiveAfterFilter();
+            renderFilters();
+            renderList();
+            renderDetail();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderBoard();
+
+            document.body.addEventListener("click", (event) => {
+                const filter = event.target.closest("[data-category]");
+                if (filter) {
+                    activeCategory = filter.dataset.category;
+                    renderBoard();
+                    return;
+                }
+
+                const card = event.target.closest("[data-id]");
+                if (card) {
+                    activeId = Number(card.dataset.id);
+                    renderBoard();
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <main class="shell">
+        <section class="hero">
+            <div class="hero-row">
+                <div>
+                    <div class="eyebrow">Cabin Bulletin Center</div>
+                    <div class="headline">Flight Ops Noticeboard</div>
+                    <div class="hero-copy">
+                        Mock reviewer bulletin page with flight-related notices, service observations, safety reminders, and unusual passenger handling notes. Select any notice to open the detailed bulletin on the right.
+                    </div>
+                </div>
+                <aside class="hero-side">
+                    <h2>Board Scope</h2>
+                    <p>
+                        Includes fake notices for safety, announcement style, service trends, U.S. route patterns,
+                        live animal handling, lithium battery events, and operational cabin reminders.
+                    </p>
+                </aside>
+            </div>
+            <div class="hero-metrics">
+                <div class="metric">
+                    <span>Total Notices</span>
+                    <strong>14</strong>
+                </div>
+                <div class="metric">
+                    <span>High Priority</span>
+                    <strong>4</strong>
+                </div>
+                <div class="metric">
+                    <span>Mock Categories</span>
+                    <strong>6</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="board">
+            <section class="section">
+                <div class="section-head">
+                    <h3>Notice List</h3>
+                    <span class="section-note">2-depth bulletin mockup</span>
+                </div>
+                <div id="filters" class="filters"></div>
+                <div id="list" class="list"></div>
+            </section>
+
+            <section class="section">
+                <div class="section-head">
+                    <h3>Notice Detail</h3>
+                    <span class="section-note">Click a bulletin to inspect content</span>
+                </div>
+                <div id="detail"></div>
+            </section>
+        </section>
+    </main>
+</body>
+</html>
