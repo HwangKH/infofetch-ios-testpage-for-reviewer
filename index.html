@@ -107,6 +107,41 @@
             margin-top: 18px;
         }
 
+        .reviewer-hint {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.01em;
+            color: #fff8e8;
+            background: rgba(217, 119, 6, 0.18);
+            border: 1px solid rgba(255, 241, 214, 0.3);
+            box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+            animation: pulseHint 1.6s ease-in-out infinite;
+        }
+
+        .reviewer-hint::before,
+        .reviewer-hint::after {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ffd166;
+            box-shadow: 0 0 12px rgba(255, 209, 102, 0.95);
+        }
+
+        .reviewer-hint.top {
+            margin-top: 12px;
+        }
+
+        .reviewer-hint.bottom {
+            margin-top: 12px;
+            margin-bottom: -2px;
+        }
+
         .route-head {
             display: flex;
             align-items: flex-start;
@@ -369,6 +404,20 @@
             font-weight: 800;
         }
 
+        @keyframes pulseHint {
+            0%,
+            100% {
+                transform: translateY(0);
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.16);
+                opacity: 0.92;
+            }
+            50% {
+                transform: translateY(-2px);
+                box-shadow: 0 0 0 12px rgba(245, 158, 11, 0);
+                opacity: 1;
+            }
+        }
+
         .dom-probe {
             position: absolute;
             width: 1px;
@@ -624,9 +673,11 @@
                                 <div class="route-head">
                                     <div class="route-head-main">
                                         <div class="route-code">KE${source.params.flt_num}</div>
+                                        <div class="reviewer-hint top">Reviewer, please click the element between these prompts</div>
                                     </div>
                                     <div class="btn-icon-wrap" aria-label="Extension button slot"></div>
                                 </div>
+                                <div class="reviewer-hint bottom">Reviewer, please click the element between these prompts</div>
                                 <div class="route-meta">
                                     <span class="hero-chip">${source.params.stnfr} to ${source.params.stnto}</span>
                                     <span class="hero-chip">${daily.sch_dep_dt_loc_comma} (${daily.week_day})</span>
